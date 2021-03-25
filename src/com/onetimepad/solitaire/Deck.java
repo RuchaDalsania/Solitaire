@@ -47,6 +47,7 @@ public class Deck {
 	public void printDeck() {
 		if (this.head != null) {
 			Card currentNode = this.head;
+			int i = 1;
 			while (currentNode != null) {
 				System.out.print("" + "(" + currentNode.prev + ")" + currentNode + ":" + currentNode.getVal() + "("
 						+ currentNode.next + ") ");
@@ -54,8 +55,11 @@ public class Deck {
 					break;
 				}
 				currentNode = currentNode.getNext();
+				i++;
 			}
 			System.out.println("END \n");
+			if (i != total)
+				System.out.println("<<<<<<<<<<<<<<<<<<<<<<<...............ALERT...................<<<<<<<<<<<<<<<<<<<<<<<");
 		} else {
 			System.out.println("Linked list is empty.");
 		}
@@ -75,9 +79,9 @@ public class Deck {
 			int j = getRandom(i);
 			swap(i, j);
 		}
-		if (range[0] >= total - 1) {
-			swap(0, 1);
-		}
+//		if (range[0] >= total - 1) {
+//			swap(0, 1);
+//		}
 		createDeck(range);
 		System.out.println(Arrays.toString(range));
 	}
@@ -118,32 +122,36 @@ public class Deck {
 		}
 	}
 
-	private int locateJoker(String color) {
-		for (int i = 0; i < this.range.length; i++) {
-			if (range[i] >= total - 1) {
-				Joker j = (Joker) getCardByValue(range[i]);
+	private Card locateJoker(String color) {
+		Card curr = this.head;
+		int i = 1;
+		do {
+			if (curr.getVal() >= total - 1) {
+				Joker j = (Joker) getCardByValue(((Joker) curr).countValue());
 				if (j.getColorStr().equals(color)) {
-					System.out.print(color + " found " + j + " at " + i);
-					return i;
+					System.out.print(color + " found " + j + " at " + i + " \n");
+					return curr;
 				}
 			}
-		}
-		return 0;
+			curr = curr.next;
+			i++;
+		} while (curr != head);
+		return null;
 	}
 
 	private void moveCard(Card c, int p) {
-		Card mainHead = this.head;
-		int i = locateJoker(((Joker) c).getColorStr());
-		while (i > 0 && mainHead.next != null) {
-			mainHead = mainHead.next;
-			i--;
-		}
-		Card curr = mainHead;
-		curr.prev.next = curr.next;
-		curr.next.prev = curr.prev;
-		while (p > 0 && curr.next != null) {
+		Card curr = c;
+		c.prev.next = c.next;
+		c.next.prev = c.prev;
+		while (p > 0) {
 			curr = curr.next;
 			p--;
+			if (c == head) {
+				head = head.next;
+			}
+			if (c == tail) {
+				tail = tail.prev;
+			}
 		}
 		c.prev = curr;
 		c.next = curr.next;
@@ -152,14 +160,18 @@ public class Deck {
 	}
 
 	private void tripleCut() {
-//		(BJ)10C:10(9C) (10C)9C:9(RJ) (9C)RJ:11(8C) (RJ)8C:8(2C) (8C)2C:2(4C) (2C)4C:4(5C)
-//		(4C)5C:5(3C) (5C)3C:3(6C) (3C)6C:6(AC) (6C)AC:1(7C) (AC)7C:7(BJ) (7C)BJ:11(10C) END 
+//		(AC)10C:10(7C) (10C)7C:7(9C) (7C)9C:9(8C) (9C)8C:8(BJ) (8C)BJ:11(2C) (BJ)2C:2(6C)
+//		(2C)6C:6(4C) (6C)4C:4(5C) (4C)5C:5(RJ) (5C)RJ:11(3C) (RJ)3C:3(AC) (3C)AC:1(10C) END 
+		moveIfHeadIsJoker();
 		Card firstJoker = null;
 		Card secondJoker = null;
 		Card temp2 = null;
-		Card current = head;
+		Card current = head.next;
+		Card temp1 = null;
+		System.out.println("HEAD:" + head);
+		System.out.println("TAIL:" + tail);
 		// Point the Joker A and B--------------------------------
-		while (current.next != current) {
+		while (current != head) {
 			if (current.getVal() >= total - 1) {
 				firstJoker = current;
 				break;
@@ -167,8 +179,9 @@ public class Deck {
 				current = current.next;
 			}
 		}
+		System.out.println("FIRST JOKER:" + firstJoker);
 		current = firstJoker.next;
-		while (current.next != current) {
+		while (current != head) {
 			if (current.getVal() >= total - 1) {
 				secondJoker = current;
 				break;
@@ -176,15 +189,24 @@ public class Deck {
 				current = current.next;
 			}
 		}
+		System.out.println("SECOND JOKER:" + secondJoker);
 		current = head;
-		while (current.next != current && current.next != firstJoker) {
+		while (current.next != firstJoker) {
 			current = current.next;
 		}
-		if (secondJoker == tail) {
+		System.out.println("CURRENT:" + current);
+		if (secondJoker == tail || secondJoker.next == head) {
 			head = firstJoker;
 			tail = current;
 		} else {
-			temp2 = secondJoker.next;
+			temp1 = secondJoker.next;
+			System.out.println("TEMP1:" + temp1);
+			secondJoker.next = null;
+			firstJoker.prev = null;
+			tail.next = null;
+			head.prev = null;
+			current.next = null;
+			temp1.prev = null;
 
 			secondJoker.next = head;
 			head.prev = secondJoker;
@@ -192,12 +214,20 @@ public class Deck {
 			tail.next = firstJoker;
 			firstJoker.prev = tail;
 
-			head = temp2;
+			head = temp1;
 			tail = current;
 
 			head.prev = tail;
 			tail.next = head;
+
 		}
+	}
+
+	private void moveIfHeadIsJoker() {
+		if(head instanceof Joker) {
+			moveCard(head, 1);
+		}
+		
 	}
 
 	private void countCut() {
@@ -216,6 +246,7 @@ public class Deck {
 		}
 		// add tail card
 		tail.next = t;
+		t.prev = tail;
 		t.next = head;
 		head.prev = t;
 	}
@@ -223,15 +254,15 @@ public class Deck {
 	private Card lookUpCard() {
 		int value = head.getVal();
 		System.out.println("head > " + head);
-		if (head.getVal() >= total - 1) {
+		Card curr = head;
+		while (value > 0) {
+			curr = curr.next;
+			value--;
+		}
+		System.out.println("lookup card > " + curr);
+		if (curr.getVal() >= total - 1) {
 			return null;
 		} else {
-			Card curr = head;
-			while (value > 1) {
-				curr = curr.next;
-				value--;
-			}
-			System.out.println(curr);
 			return curr;
 		}
 	}
@@ -242,13 +273,9 @@ public class Deck {
 		shuffle();
 		System.out.print("shuffle: ");
 		printDeck();
-		Card c = new Joker("R");
-		moveCard(c, 1);
-		System.out.print("Joker R: ");
+		moveCard(locateJoker("R"), 1);
 		printDeck();
-		Card c2 = new Joker("B");
-		moveCard(c2, 2);
-		System.out.print("Joker B: ");
+		moveCard(locateJoker("B"), 2);
 		printDeck();
 		tripleCut();
 		System.out.print("triple cut: ");
@@ -267,7 +294,15 @@ public class Deck {
 
 	public static void main(String[] args) {
 		Deck deck = new Deck(5, 2);
-		deck.generateNextKeystreamValue();
+		int[] range = { 9, 2, 12, 1, 5, 11, 8, 6, 10, 7, 3, 4 };
+		deck.createDeck(range);
+//		deck.printDeck();
+//		deck.moveCard(deck.locateJoker("R"), 1);
+//		deck.printDeck();
+//		deck.moveCard(deck.locateJoker("B"), 2);
+//		deck.printDeck();
+		deck.tripleCut();
+		deck.printDeck();
 	}
 
 	class Card {
@@ -421,7 +456,7 @@ public class Deck {
 		}
 
 		public int countValue() {
-			return total - 1;
+			return color == 1 ? total - 1 : total;
 		}
 
 	}
