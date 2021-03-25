@@ -20,14 +20,17 @@ public class Deck {
 					"second input is not a number between 1 and the size of the class field suitsInOrder.");
 		}
 		total = numOfCardsPerSuit * numOfSuits + 2;
-		for (int suit = 1; suit <= numOfSuits; suit++) {
-			for (int rank = 1; rank <= numOfCardsPerSuit; rank++) {
+		range = new int[total];
+		for (int i = 0, suit = 1; suit <= numOfSuits; suit++) {
+			for (int rank = 1; rank <= numOfCardsPerSuit; rank++, i++) {
 				Card c = new PlayingCard(suit, rank);
 				addCard(c);
-
+				range[i] = c.getVal();
 			}
 		}
 		addJoker();
+		range[total - 2] = total - 1;
+		range[total - 1] = total;
 	}
 
 	private void addCard(Card c) {
@@ -59,7 +62,8 @@ public class Deck {
 			}
 			System.out.println("END \n");
 			if (i != total)
-				System.out.println("<<<<<<<<<<<<<<<<<<<<<<<...............ALERT...................<<<<<<<<<<<<<<<<<<<<<<<");
+				System.out.println(
+						"<<<<<<<<<<<<<<<<<<<<<<<...............ALERT...................<<<<<<<<<<<<<<<<<<<<<<<");
 		} else {
 			System.out.println("Linked list is empty.");
 		}
@@ -74,14 +78,12 @@ public class Deck {
 	}
 
 	void shuffle() {
-		this.range = IntStream.rangeClosed(1, total).toArray();
+//		this.range = IntStream.rangeClosed(1, total).toArray();
+		System.out.println(Arrays.toString(range));
 		for (int i = total - 1; i > 1; i--) {
 			int j = getRandom(i);
 			swap(i, j);
 		}
-//		if (range[0] >= total - 1) {
-//			swap(0, 1);
-//		}
 		createDeck(range);
 		System.out.println(Arrays.toString(range));
 	}
@@ -93,9 +95,6 @@ public class Deck {
 	}
 
 	private void createDeck(int[] range) {
-//		int[] range1 = { 18, 17, 26, 15, 23, 2, 14, 6, 22, 28, 3, 8, 27, 13, 4, 1, 19, 11, 21, 12, 9, 25, 7, 5, 20, 10,
-//				24, 16 };
-//		this.range = range1;
 		this.head = null;
 		for (int i = 0; i < range.length; i++) {
 			addCard(getCardByValue(range[i]));
@@ -109,7 +108,7 @@ public class Deck {
 	}
 
 	private Card getCardByValue(int val) {
-		if (val >= total - 1)
+		if (val == total - 1 || val == total)
 			return val == total ? new Joker("B") : new Joker("R");
 		if (val < 14) {
 			return new PlayingCard(1, val);
@@ -126,7 +125,7 @@ public class Deck {
 		Card curr = this.head;
 		int i = 1;
 		do {
-			if (curr.getVal() >= total - 1) {
+			if (curr.getVal() == total - 1 || curr.getVal() == total) {
 				Joker j = (Joker) getCardByValue(((Joker) curr).countValue());
 				if (j.getColorStr().equals(color)) {
 					System.out.print(color + " found " + j + " at " + i + " \n");
@@ -172,7 +171,7 @@ public class Deck {
 		System.out.println("TAIL:" + tail);
 		// Point the Joker A and B--------------------------------
 		while (current != head) {
-			if (current.getVal() >= total - 1) {
+			if (current.getVal() == total - 1 || current.getVal() == total) {
 				firstJoker = current;
 				break;
 			} else {
@@ -182,7 +181,7 @@ public class Deck {
 		System.out.println("FIRST JOKER:" + firstJoker);
 		current = firstJoker.next;
 		while (current != head) {
-			if (current.getVal() >= total - 1) {
+			if (current.getVal() == total - 1 || current.getVal() == total) {
 				secondJoker = current;
 				break;
 			} else {
@@ -224,10 +223,10 @@ public class Deck {
 	}
 
 	private void moveIfHeadIsJoker() {
-		if(head instanceof Joker) {
+		if (head instanceof Joker) {
 			moveCard(head, 1);
 		}
-		
+
 	}
 
 	private void countCut() {
@@ -260,7 +259,7 @@ public class Deck {
 			value--;
 		}
 		System.out.println("lookup card > " + curr);
-		if (curr.getVal() >= total - 1) {
+		if (curr.getVal() == total - 1 || curr.getVal() == total) {
 			return null;
 		} else {
 			return curr;
