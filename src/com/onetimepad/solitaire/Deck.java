@@ -1,11 +1,13 @@
 package com.onetimepad.solitaire;
 
 import java.util.Arrays;
+import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 public class Deck {
 
+	private Random random;
 	private int total;
 	private Card head, tail;
 	private int[] range;
@@ -21,6 +23,7 @@ public class Deck {
 		}
 		total = numOfCardsPerSuit * numOfSuits + 2;
 		range = new int[total];
+		random=new Random(total);
 		for (int i = 0, suit = 1; suit <= numOfSuits; suit++) {
 			for (int rank = 1; rank <= numOfCardsPerSuit; rank++, i++) {
 				Card c = new PlayingCard(suit, rank);
@@ -29,8 +32,6 @@ public class Deck {
 			}
 		}
 		addJoker();
-		range[total - 2] = total - 1;
-		range[total - 1] = total;
 	}
 
 	private void addCard(Card c) {
@@ -74,11 +75,12 @@ public class Deck {
 		Card c2 = new Joker("B");
 		addCard(c1);
 		addCard(c2);
-
+		range[total - 2] = total - 1;
+		range[total - 1] = total;
 	}
 
 	void shuffle() {
-//		this.range = IntStream.rangeClosed(1, total).toArray();
+//		int[] range = { 3,16,14,5,12,2,15,17,1,11,4,18 };
 		System.out.println(Arrays.toString(range));
 		for (int i = total - 1; i > 1; i--) {
 			int j = getRandom(i);
@@ -104,7 +106,10 @@ public class Deck {
 	private int getRandom(int i) {
 		int low = 0;
 		int high = i;
-		return ThreadLocalRandom.current().nextInt(low, high + 1);
+		
+//		return ThreadLocalRandom.current().nextInt(low, high + 1);
+//		return random.nextInt(high+1);
+		return random.nextInt((high- low) + 1) + low;
 	}
 
 	private Card getCardByValue(int val) {
@@ -159,12 +164,9 @@ public class Deck {
 	}
 
 	private void tripleCut() {
-//		(AC)10C:10(7C) (10C)7C:7(9C) (7C)9C:9(8C) (9C)8C:8(BJ) (8C)BJ:11(2C) (BJ)2C:2(6C)
-//		(2C)6C:6(4C) (6C)4C:4(5C) (4C)5C:5(RJ) (5C)RJ:11(3C) (RJ)3C:3(AC) (3C)AC:1(10C) END 
 		moveIfHeadIsJoker();
 		Card firstJoker = null;
 		Card secondJoker = null;
-		Card temp2 = null;
 		Card current = head.next;
 		Card temp1 = null;
 		System.out.println("HEAD:" + head);
@@ -293,15 +295,34 @@ public class Deck {
 
 	public static void main(String[] args) {
 		Deck deck = new Deck(5, 2);
-		int[] range = { 9, 2, 12, 1, 5, 11, 8, 6, 10, 7, 3, 4 };
+		int[] range = { 3,16,14,5,12,2,15,17,1,11,4,18 };
 		deck.createDeck(range);
+		deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();deck.shuffle();
+//		System.out.print("initial: ");
+//		printDeck();
+//		shuffle();
+//		System.out.print("shuffle: ");
+		
+		
+//		
 //		deck.printDeck();
 //		deck.moveCard(deck.locateJoker("R"), 1);
 //		deck.printDeck();
 //		deck.moveCard(deck.locateJoker("B"), 2);
 //		deck.printDeck();
-		deck.tripleCut();
-		deck.printDeck();
+//		deck.tripleCut();
+//		System.out.print("triple cut: ");
+//		deck.printDeck();
+//		System.out.print("count cut: ");
+//		deck.countCut();
+//		deck.printDeck();
+//		Card card = deck.lookUpCard();
+//		if (card == null) {
+//			return;
+//		} else {
+//			System.out.println("=========" + card.getVal() + "=========");
+////			return card.getVal();
+//		}
 	}
 
 	class Card {
@@ -439,7 +460,7 @@ public class Deck {
 				throw new IllegalArgumentException("Joker color either R or B");
 			}
 			this.color = (byte) (color.equals("R") ? 1 : 2);
-			this.setVal(total - 1);
+			this.setVal(total - (2-this.color ));
 		}
 
 		public byte getColor() {
